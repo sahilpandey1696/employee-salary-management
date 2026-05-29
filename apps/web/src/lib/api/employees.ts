@@ -1,3 +1,4 @@
+import { assertOk } from "@/lib/api/http";
 import { DEFAULT_PAGE_SIZE } from "@/lib/constants";
 import type { EmployeeListResponse } from "@/types/employee";
 
@@ -10,6 +11,7 @@ export type FetchEmployeesParams = {
 
 export async function fetchEmployees(
   params: FetchEmployeesParams = {},
+  signal?: AbortSignal,
 ): Promise<EmployeeListResponse> {
   const query = new URLSearchParams();
 
@@ -24,14 +26,8 @@ export async function fetchEmployees(
     query.set("country", params.country);
   }
 
-  const response = await fetch(`/api/employees?${query.toString()}`);
-
-  if (!response.ok) {
-    const body = (await response.json().catch(() => null)) as {
-      error?: string;
-    } | null;
-    throw new Error(body?.error ?? "Failed to load employees");
-  }
+  const response = await fetch(`/api/employees?${query.toString()}`, { signal });
+  await assertOk(response);
 
   return response.json() as Promise<EmployeeListResponse>;
 }

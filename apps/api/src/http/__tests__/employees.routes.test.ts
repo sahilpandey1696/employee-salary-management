@@ -108,4 +108,17 @@ describe("GET /employees", () => {
       error: "Page must be at least 1",
     });
   });
+
+  it("returns 400 when page size exceeds the maximum", async () => {
+    const app = createApp({ prisma });
+
+    const response = await request(app)
+      .get("/employees")
+      .query({ pageSize: 101 })
+      .expect(400);
+
+    expect(response.body).toMatchObject({
+      error: "Page size must not exceed 100",
+    });
+  });
 });

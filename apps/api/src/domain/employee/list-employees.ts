@@ -1,4 +1,5 @@
 export const DEFAULT_PAGE_SIZE = 25;
+export const MAX_PAGE_SIZE = 100;
 
 export type Employee = {
   id: string;
@@ -42,6 +43,10 @@ export function parseEmployeeListParams(
 
   if (pageSize < 1) {
     throw new Error("Page size must be at least 1");
+  }
+
+  if (pageSize > MAX_PAGE_SIZE) {
+    throw new Error(`Page size must not exceed ${MAX_PAGE_SIZE}`);
   }
 
   const search = normalizeSearch(input.search);

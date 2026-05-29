@@ -82,9 +82,29 @@ describe("EmployeeListPanel", () => {
       () => {
         expect(fetchEmployees).toHaveBeenLastCalledWith(
           expect.objectContaining({ search: "alice", page: 1 }),
+          expect.any(AbortSignal),
         );
       },
       { timeout: 800 },
     );
+  });
+
+  it("aborts stale requests when filters change", async () => {
+    let abortCount = 0;
+    vi.mocked(fetchEmployees).mockImplementation((_params, signal) => {
+      signal?.addEventListener("abort", () => {
+        abortCount += 1;
+      });
+      return new Promise(() => undefined);
+    });
+
+    const user = userEvent.setup();
+    render(<EmployeeListPanel />);
+
+    await user.type(screen.getByLabelText("Search employees"), "a");
+
+    await waitFor(() => {
+      expect(abortCount).toBeGreaterThan(0);
+    });
   });
 });

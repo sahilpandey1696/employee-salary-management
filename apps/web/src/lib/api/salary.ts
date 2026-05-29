@@ -1,15 +1,9 @@
+import { assertOk } from "@/lib/api/http";
 import type {
   CreateSalaryPayload,
   Salary,
   UpdateSalaryPayload,
 } from "@/types/salary";
-
-async function readError(response: Response): Promise<string> {
-  const body = (await response.json().catch(() => null)) as {
-    error?: string;
-  } | null;
-  return body?.error ?? "Request failed";
-}
 
 export async function fetchEmployeeSalary(
   employeeId: string,
@@ -20,9 +14,7 @@ export async function fetchEmployeeSalary(
     return null;
   }
 
-  if (!response.ok) {
-    throw new Error(await readError(response));
-  }
+  await assertOk(response);
 
   return response.json() as Promise<Salary>;
 }
@@ -37,9 +29,7 @@ export async function createEmployeeSalary(
     body: JSON.stringify(payload),
   });
 
-  if (!response.ok) {
-    throw new Error(await readError(response));
-  }
+  await assertOk(response);
 
   return response.json() as Promise<Salary>;
 }
@@ -54,9 +44,7 @@ export async function updateEmployeeSalary(
     body: JSON.stringify(payload),
   });
 
-  if (!response.ok) {
-    throw new Error(await readError(response));
-  }
+  await assertOk(response);
 
   return response.json() as Promise<Salary>;
 }

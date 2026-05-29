@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   DEFAULT_PAGE_SIZE,
+  MAX_PAGE_SIZE,
   listEmployees,
   parseEmployeeListParams,
   type Employee,
@@ -76,6 +77,12 @@ describe("parseEmployeeListParams", () => {
     expect(() => parseEmployeeListParams({ pageSize: 0 })).toThrow(
       "Page size must be at least 1",
     );
+  });
+
+  it("rejects page sizes above the maximum", () => {
+    expect(() =>
+      parseEmployeeListParams({ pageSize: MAX_PAGE_SIZE + 1 }),
+    ).toThrow(`Page size must not exceed ${MAX_PAGE_SIZE}`);
   });
 });
 

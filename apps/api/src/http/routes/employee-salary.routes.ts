@@ -2,6 +2,11 @@ import type { PrismaClient } from "@prisma/client";
 import { Router } from "express";
 import { validateSalaryAmount } from "../../domain/salary/salary-record.js";
 import {
+  BadRequestError,
+  ConflictError,
+  NotFoundError,
+} from "../errors.js";
+import {
   SalaryConflictError,
   SalaryNotFoundError,
   createSalaryRepository,
@@ -11,39 +16,34 @@ export function createEmployeeSalaryRouter(prisma: PrismaClient): Router {
   const router = Router({ mergeParams: true });
   const salaries = createSalaryRepository(prisma);
 
-  router.get("/", async (request, response) => {
-    const employeeId = parseEmployeeId(request.params.employeeId);
-
-    if (!(await employeeExists(prisma, employeeId))) {
-      response.status(404).json({ error: "Employee not found" });
-      return;
-    }
-
+  router.get("/", async (request, response, next) => {
     try {
+      const employeeId = parseEmployeeId(request.params.employeeId);
+
+      if (!(await employeeExists(prisma, employeeId))) {
+        throw new NotFoundError("Employee not found");
+      }
+
       const salary = await salaries.getActive(employeeId);
 
       if (salary === null) {
-        response.status(404).json({
-          error: "No active salary record found for employee",
-        });
-        return;
+        throw new NotFoundError("No active salary record found for employee");
       }
 
       response.json(serializeSalary(salary));
     } catch (error) {
-      sendDomainError(response, error);
+      next(mapSalaryRouteError(error));
     }
   });
 
-  router.post("/", async (request, response) => {
-    const employeeId = parseEmployeeId(request.params.employeeId);
-
-    if (!(await employeeExists(prisma, employeeId))) {
-      response.status(404).json({ error: "Employee not found" });
-      return;
-    }
-
+  router.post("/", async (request, response, next) => {
     try {
+      const employeeId = parseEmployeeId(request.params.employeeId);
+
+      if (!(await employeeExists(prisma, employeeId))) {
+        throw new NotFoundError("Employee not found");
+      }
+
       const amount = parseRequiredNumber(request.body?.amount, "amount");
       const currency = parseRequiredString(request.body?.currency, "currency");
       const effectiveFrom = parseEffectiveFrom(request.body?.effectiveFrom);
@@ -56,24 +56,23 @@ export function createEmployeeSalaryRouter(prisma: PrismaClient): Router {
 
       response.status(201).json(serializeSalary(salary));
     } catch (error) {
-      sendDomainError(response, error);
+      next(mapSalaryRouteError(error));
     }
   });
 
-  router.patch("/", async (request, response) => {
-    const employeeId = parseEmployeeId(request.params.employeeId);
-
-    if (!(await employeeExists(prisma, employeeId))) {
-      response.status(404).json({ error: "Employee not found" });
-      return;
-    }
-
+  router.patch("/", async (request, response, next) => {
     try {
+      const employeeId = parseEmployeeId(request.params.employeeId);
+
+      if (!(await employeeExists(prisma, employeeId))) {
+        throw new NotFoundError("Employee not found");
+      }
+
       const amount = parseRequiredNumber(request.body?.amount, "amount");
       const salary = await salaries.updateAmount(employeeId, amount);
       response.json(serializeSalary(salary));
     } catch (error) {
-      sendDomainError(response, error);
+      next(mapSalaryRouteError(error));
     }
   });
 
@@ -90,7 +89,7 @@ async function employeeExists(
 
 function parseEmployeeId(value: string | string[] | undefined): string {
   if (typeof value !== "string" || value.length === 0) {
-    throw new Error("Employee id is required");
+    throw new BadRequestError("Employee id is required");
   }
 
   return value;
@@ -98,7 +97,7 @@ function parseEmployeeId(value: string | string[] | undefined): string {
 
 function parseRequiredString(value: unknown, field: string): string {
   if (typeof value !== "string" || value.trim().length === 0) {
-    throw new Error(`${field} is required`);
+    throw new BadRequestError(`${field} is required`);
   }
 
   return value;
@@ -106,7 +105,7 @@ function parseRequiredString(value: unknown, field: string): string {
 
 function parseRequiredNumber(value: unknown, field: string): number {
   if (typeof value !== "number" || Number.isNaN(value)) {
-    throw new Error(`${field} must be a number`);
+    throw new BadRequestError(`${field} must be a number`);
   }
 
   return validateSalaryAmount(value);
@@ -118,13 +117,13 @@ function parseEffectiveFrom(value: unknown): Date {
   }
 
   if (typeof value !== "string") {
-    throw new Error("effectiveFrom must be an ISO date string");
+    throw new BadRequestError("effectiveFrom must be an ISO date string");
   }
 
   const parsed = new Date(value);
 
   if (Number.isNaN(parsed.getTime())) {
-    throw new Error("effectiveFrom must be an ISO date string");
+    throw new BadRequestError("effectiveFrom must be an ISO date string");
   }
 
   return parsed;
@@ -148,24 +147,26 @@ function serializeSalary(salary: {
   };
 }
 
-function sendDomainError(
-  response: import("express").Response,
-  error: unknown,
-): void {
+function mapSalaryRouteError(error: unknown): unknown {
+  if (
+    error instanceof BadRequestError ||
+    error instanceof NotFoundError ||
+    error instanceof ConflictError
+  ) {
+    return error;
+  }
+
   if (error instanceof SalaryNotFoundError) {
-    response.status(404).json({ error: error.message });
-    return;
+    return new NotFoundError(error.message);
   }
 
   if (error instanceof SalaryConflictError) {
-    response.status(409).json({ error: error.message });
-    return;
+    return new ConflictError(error.message);
   }
 
   if (error instanceof Error) {
-    response.status(400).json({ error: error.message });
-    return;
+    return new BadRequestError(error.message);
   }
 
-  throw error;
+  return error;
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -49,31 +49,48 @@ export function EmployeeListPanel() {
 
   const debouncedSearch = useDebouncedValue(search, 300);
 
-  const loadEmployees = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const response = await fetchEmployees({
-        page,
-        pageSize: DEFAULT_PAGE_SIZE,
-        search: debouncedSearch || undefined,
-        country: country || undefined,
-      });
-      setData(response);
-    } catch (loadError) {
-      setData(null);
-      setError(
-        loadError instanceof Error ? loadError.message : "Failed to load employees",
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  }, [country, debouncedSearch, page]);
-
   useEffect(() => {
+    const controller = new AbortController();
+
+    async function loadEmployees() {
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        const response = await fetchEmployees(
+          {
+            page,
+            pageSize: DEFAULT_PAGE_SIZE,
+            search: debouncedSearch || undefined,
+            country: country || undefined,
+          },
+          controller.signal,
+        );
+        setData(response);
+      } catch (loadError) {
+        if (controller.signal.aborted) {
+          return;
+        }
+
+        setData(null);
+        setError(
+          loadError instanceof Error
+            ? loadError.message
+            : "Failed to load employees",
+        );
+      } finally {
+        if (!controller.signal.aborted) {
+          setIsLoading(false);
+        }
+      }
+    }
+
     void loadEmployees();
-  }, [loadEmployees]);
+
+    return () => {
+      controller.abort();
+    };
+  }, [country, debouncedSearch, page]);
 
   useEffect(() => {
     setPage(1);

@@ -1,0 +1,15 @@
+{
+  "name": "employee-salary-management",
+  "private": true,
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "test": "npm run test --workspaces --if-present",
+    "test:api": "npm run test -w @esm/api",
+    "test:web": "npm run test -w @esm/web"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

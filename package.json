@@ -13,7 +13,9 @@
     "test:web": "npm run test -w @esm/web",
     "db:generate": "npm run db:generate -w @esm/api",
     "db:migrate": "npm run db:migrate -w @esm/api",
-    "db:seed": "npm run db:seed -w @esm/api"
+    "db:seed": "npm run db:seed -w @esm/api",
+    "db:backfill-salaries": "npm run db:backfill-salaries -w @esm/api",
+    "db:sync-salary-status": "npm run db:sync-salary-status -w @esm/api"
   },
   "engines": {
     "node": ">=20"

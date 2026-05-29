@@ -16,11 +16,18 @@ export async function apiFetch<T>(
 ): Promise<T> {
   const response = await fetch(`${API_BASE}${path}`, {
     ...init,
+    cache: "no-store",
     headers: {
       "Content-Type": "application/json",
+      "Cache-Control": "no-cache",
+      Pragma: "no-cache",
       ...init?.headers,
     },
   });
+
+  if (response.status === 304) {
+    throw new ApiError("Cached response is stale. Refresh and try again.", 304);
+  }
 
   if (!response.ok) {
     const body = (await response.json().catch(() => null)) as

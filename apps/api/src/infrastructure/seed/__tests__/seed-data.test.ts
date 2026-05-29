@@ -13,7 +13,12 @@ describe("createSeedEmployees", () => {
     expect(employees).toHaveLength(SEED_EMPLOYEE_COUNT);
 
     const employeeNumbers = employees.map((employee) => employee.employeeNumber);
+    const emails = employees.map((employee) => employee.email);
+    const phones = employees.map((employee) => employee.phone);
+
     expect(new Set(employeeNumbers).size).toBe(SEED_EMPLOYEE_COUNT);
+    expect(new Set(emails).size).toBe(SEED_EMPLOYEE_COUNT);
+    expect(new Set(phones).size).toBe(SEED_EMPLOYEE_COUNT);
   });
 
   it("assigns countries from the supported set", () => {
@@ -36,15 +41,17 @@ describe("createSeedEmployees", () => {
 });
 
 describe("createSeedSalaries", () => {
-  it("creates one active salary per active employee", () => {
+  it("creates a salary record for every employee", () => {
     const employees = createSeedEmployees(7);
     const salaries = createSeedSalaries(employees);
-    const activeCount = employees.filter(
-      (employee) => employee.employmentStatus === "ACTIVE",
-    ).length;
 
-    expect(salaries).toHaveLength(activeCount);
-    expect(salaries.every((salary) => salary.isActive)).toBe(true);
+    expect(salaries).toHaveLength(employees.length);
     expect(salaries.every((salary) => salary.amount > 0)).toBe(true);
+    expect(
+      salaries.filter((salary) => salary.isActive).length,
+    ).toBe(
+      employees.filter((employee) => employee.employmentStatus === "ACTIVE")
+        .length,
+    );
   });
 });

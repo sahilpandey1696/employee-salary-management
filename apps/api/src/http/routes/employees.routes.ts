@@ -162,10 +162,17 @@ function requireString(value: unknown, field: string): string {
 }
 
 function requireNumber(value: unknown, field: string): number {
-  if (typeof value !== "number" || Number.isNaN(value)) {
+  const parsed =
+    typeof value === "number"
+      ? value
+      : typeof value === "string"
+        ? Number(value)
+        : Number.NaN;
+
+  if (Number.isNaN(parsed)) {
     throw new BadRequestError(`${field} must be a number`);
   }
-  return value;
+  return parsed;
 }
 
 function parseDate(value: unknown, field: string): Date {

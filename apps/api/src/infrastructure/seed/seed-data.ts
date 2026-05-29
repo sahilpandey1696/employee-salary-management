@@ -76,7 +76,7 @@ export type SeedSalary = {
   amount: number;
   currency: string;
   effectiveFrom: Date;
-  isActive: true;
+  isActive: boolean;
 };
 
 export function createSeedEmployees(count: number): SeedEmployee[] {
@@ -84,15 +84,22 @@ export function createSeedEmployees(count: number): SeedEmployee[] {
 }
 
 export function createSeedSalaries(employees: SeedEmployee[]): SeedSalary[] {
-  return employees
-    .filter((employee) => employee.employmentStatus === "ACTIVE")
-    .map((employee, index) => ({
+  return employees.map((employee) => {
+    const sequence = parseEmployeeSequence(employee.employeeNumber);
+
+    return {
       employeeNumber: employee.employeeNumber,
-      amount: buildSalaryAmount(index + 1),
+      amount: buildSalaryAmount(sequence),
       currency: "USD",
       effectiveFrom: employee.joiningDate,
-      isActive: true as const,
-    }));
+      isActive: employee.employmentStatus === "ACTIVE",
+    };
+  });
+}
+
+export function parseEmployeeSequence(employeeNumber: string): number {
+  const match = employeeNumber.match(/^EMP(\d+)$/i);
+  return match ? Number.parseInt(match[1], 10) : 1;
 }
 
 function buildEmployee(sequence: number): SeedEmployee {
@@ -110,7 +117,7 @@ function buildEmployee(sequence: number): SeedEmployee {
     lastName,
     fullName: `${firstName} ${lastName}`,
     email: `${firstName.toLowerCase()}.${lastName.toLowerCase()}.${sequence}@acme.org`,
-    phone: `+1${String(2000000000 + (sequence % 799999999)).slice(0, 10)}`,
+    phone: `+${String(7_000_000_000 + sequence)}`,
     country,
     department,
     jobTitle,
@@ -123,7 +130,7 @@ function formatEmployeeNumber(sequence: number): string {
   return `EMP${sequence.toString().padStart(5, "0")}`;
 }
 
-function buildSalaryAmount(sequence: number): number {
+export function buildSalaryAmount(sequence: number): number {
   const base = 42_000 + (sequence % 200) * 260;
   return Math.round(base * 100) / 100;
 }

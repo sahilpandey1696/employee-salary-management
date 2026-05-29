@@ -4,12 +4,14 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "tsx src/server.ts",
+    "dev": "tsx watch src/server.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate deploy",
-    "db:seed": "prisma db seed"
+    "db:seed": "prisma db seed",
+    "db:backfill-salaries": "tsx prisma/backfill-salaries.ts",
+    "db:sync-salary-status": "tsx prisma/sync-salary-status.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

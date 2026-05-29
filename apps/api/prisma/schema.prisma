@@ -13,8 +13,8 @@ model Employee {
   firstName        String
   lastName         String
   fullName         String
-  email            String
-  phone            String?
+  email            String   @unique
+  phone            String?  @unique
   country          String
   department       String
   jobTitle         String

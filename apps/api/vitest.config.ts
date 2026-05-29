@@ -5,5 +5,8 @@ export default defineConfig({
     environment: "node",
     include: ["src/**/*.test.ts"],
     globals: false,
+    env: {
+      DATABASE_URL: "file:./prisma/test.db",
+    },
   },
 });

@@ -24,6 +24,8 @@ import {
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { fetchEmployees } from "@/lib/api/employees";
 import { COUNTRIES, DEFAULT_PAGE_SIZE } from "@/lib/constants";
+import { EmployeeSalaryDialog } from "@/components/employees/employee-salary-dialog";
+import type { Employee } from "@/types/employee";
 import type { EmployeeListResponse } from "@/types/employee";
 
 function formatResultsLabel(data: EmployeeListResponse): string {
@@ -43,6 +45,7 @@ export function EmployeeListPanel() {
   const [data, setData] = useState<EmployeeListResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
 
   const debouncedSearch = useDebouncedValue(search, 300);
 
@@ -149,6 +152,7 @@ export function EmployeeListPanel() {
                     <TableHead>Name</TableHead>
                     <TableHead>Country</TableHead>
                     <TableHead>Department</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -160,6 +164,16 @@ export function EmployeeListPanel() {
                       <TableCell>{employee.fullName}</TableCell>
                       <TableCell>{employee.country}</TableCell>
                       <TableCell>{employee.department ?? "—"}</TableCell>
+                      <TableCell className="text-right">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setSelectedEmployee(employee)}
+                        >
+                          Manage salary
+                        </Button>
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -191,6 +205,18 @@ export function EmployeeListPanel() {
           ) : null}
         </CardContent>
       </Card>
+
+      {selectedEmployee ? (
+        <EmployeeSalaryDialog
+          employee={selectedEmployee}
+          open
+          onOpenChange={(open) => {
+            if (!open) {
+              setSelectedEmployee(null);
+            }
+          }}
+        />
+      ) : null}
     </div>
   );
 }

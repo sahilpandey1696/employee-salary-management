@@ -5,10 +5,13 @@ import {
   type EmployeeListParams,
 } from "../../domain/employee/list-employees.js";
 import { createEmployeeRepository } from "../../repositories/employee.repository.js";
+import { createEmployeeSalaryRouter } from "./employee-salary.routes.js";
 
 export function createEmployeesRouter(prisma: PrismaClient): Router {
   const router = Router();
   const employees = createEmployeeRepository(prisma);
+
+  router.use("/:employeeId/salary", createEmployeeSalaryRouter(prisma));
 
   router.get("/", async (request, response) => {
     try {

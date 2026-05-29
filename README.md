@@ -1,18 +1,19 @@
 # Employee Salary Management
 
-HR platform for browsing ~10,000 employees, managing compensation, and viewing payroll distribution by country. Built as a monorepo with strict domain-driven TDD on the API and a Next.js SaaS-style UI.
+HR platform for browsing ~10,000 employees, managing compensation, and viewing payroll analytics. Built as a monorepo with strict domain-driven TDD on the API and a Vite + React enterprise UI.
 
 ## Features
 
-- **Employees** — Search, filter by country, paginated list
-- **Salary** — View, create, and update active salary per employee (with edit confirmation)
-- **Dashboard** — Total payroll, average salary, country breakdown
+- **Dashboard** — KPIs, charts (salary by country/department, workforce split, top/bottom earners)
+- **Employees** — Search (code, name, email), employment status filter, sortable table, pagination (20/page)
+- **CRUD** — Add, view, edit, and delete employees with compensation fields
+- **Salary API** — View, create, and update active salary per employee (REST)
 
 ## Tech stack
 
 | Layer | Technologies |
 |-------|----------------|
-| Frontend | Next.js 15, TypeScript, Tailwind CSS, shadcn/ui |
+| Frontend | Vite, React 19, React Router, TypeScript, Tailwind CSS, Recharts |
 | Backend | Node.js, Express 5, TypeScript, Prisma, SQLite |
 | Testing | Vitest, React Testing Library, Supertest |
 
@@ -40,11 +41,11 @@ npm run db:seed
 # Terminal 1 — API on http://localhost:3001
 npm run dev:api
 
-# Terminal 2 — Web on http://localhost:3000
+# Terminal 2 — Web on http://localhost:5173
 npm run dev:web
 ```
 
-Open [http://localhost:3000](http://localhost:3000). The web app proxies `/api/*` to the API (see `apps/web/next.config.ts`).
+Open [http://localhost:5173](http://localhost:5173). The dev server proxies `/api/*` to the API (see `apps/web/vite.config.ts`).
 
 ## Environment variables
 
@@ -55,25 +56,25 @@ Open [http://localhost:3000](http://localhost:3000). The web app proxies `/api/*
 | `DATABASE_URL` | SQLite connection string | `file:./prisma/dev.db` |
 | `PORT` | HTTP port | `3001` |
 
-### Web (`apps/web/.env.local` optional)
+### Web (`apps/web/.env` optional)
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `API_URL` | Backend origin for Next.js rewrites | `http://localhost:3001` |
+| `VITE_API_URL` | Backend origin (use `/api` in dev for Vite proxy) | `/api` |
 
 ## Scripts
 
 | Command | Description |
 |---------|-------------|
 | `npm run dev:api` | Start Express API with hot reload |
-| `npm run dev:web` | Start Next.js dev server |
+| `npm run dev:web` | Start Vite dev server (port 5173) |
 | `npm test` | Run all workspace tests |
 | `npm run test:api` | API unit and integration tests |
 | `npm run test:web` | Frontend unit tests |
 | `npm run db:generate` | Generate Prisma client |
 | `npm run db:migrate` | Apply migrations |
 | `npm run db:seed` | Load 10,000 employees + salaries |
-| `npm run build:web` | Production Next.js build |
+| `npm run build:web` | Production Vite build |
 
 ## Project structure
 

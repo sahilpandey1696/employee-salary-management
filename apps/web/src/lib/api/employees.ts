@@ -1,33 +1,60 @@
-import { assertOk } from "@/lib/api/http";
-import { DEFAULT_PAGE_SIZE } from "@/lib/constants";
-import type { EmployeeListResponse } from "@/types/employee";
+import type {
+  CreateEmployeePayload,
+  Employee,
+  EmployeeListParams,
+  EmployeeListResponse,
+} from "@/types/employee";
+import { apiFetch } from "./http";
 
-export type FetchEmployeesParams = {
-  page?: number;
-  pageSize?: number;
-  search?: string;
-  country?: string;
-};
+function toQuery(params: EmployeeListParams): string {
+  const searchParams = new URLSearchParams();
 
-export async function fetchEmployees(
-  params: FetchEmployeesParams = {},
-  signal?: AbortSignal,
+  for (const [key, value] of Object.entries(params)) {
+    if (value !== undefined && value !== "") {
+      searchParams.set(key, String(value));
+    }
+  }
+
+  const query = searchParams.toString();
+  return query.length > 0 ? `?${query}` : "";
+}
+
+export function fetchEmployees(
+  params: EmployeeListParams,
 ): Promise<EmployeeListResponse> {
-  const query = new URLSearchParams();
+  return apiFetch<EmployeeListResponse>(`/employees${toQuery(params)}`);
+}
 
-  query.set("page", String(params.page ?? 1));
-  query.set("pageSize", String(params.pageSize ?? DEFAULT_PAGE_SIZE));
+export function fetchEmployee(id: string): Promise<Employee> {
+  return apiFetch<Employee>(`/employees/${id}`);
+}
 
-  if (params.search) {
-    query.set("search", params.search);
-  }
+export function createEmployee(
+  payload: CreateEmployeePayload,
+): Promise<Employee> {
+  return apiFetch<Employee>("/employees", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
 
-  if (params.country) {
-    query.set("country", params.country);
-  }
+export function updateEmployee(
+  id: string,
+  payload: Partial<CreateEmployeePayload>,
+): Promise<Employee> {
+  return apiFetch<Employee>(`/employees/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(payload),
+  });
+}
 
-  const response = await fetch(`/api/employees?${query.toString()}`, { signal });
-  await assertOk(response);
+export function deleteEmployee(id: string): Promise<void> {
+  return apiFetch<void>(`/employees/${id}`, { method: "DELETE" });
+}
 
-  return response.json() as Promise<EmployeeListResponse>;
+export function fetchNextEmployeeCode(): Promise<{ employeeNumber: string }> {
+  return fetchEmployees({ page: 1, pageSize: 1 }).then((response) => {
+    const next = response.total + 1;
+    return { employeeNumber: `EMP${next.toString().padStart(5, "0")}` };
+  });
 }

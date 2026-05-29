@@ -28,19 +28,22 @@ describe("createSeedEmployees", () => {
     const employees = createSeedEmployees(3);
 
     expect(employees.map((employee) => employee.employeeNumber)).toEqual([
-      "E00001",
-      "E00002",
-      "E00003",
+      "EMP00001",
+      "EMP00002",
+      "EMP00003",
     ]);
   });
 });
 
 describe("createSeedSalaries", () => {
-  it("creates one active salary per employee", () => {
-    const employees = createSeedEmployees(5);
+  it("creates one active salary per active employee", () => {
+    const employees = createSeedEmployees(7);
     const salaries = createSeedSalaries(employees);
+    const activeCount = employees.filter(
+      (employee) => employee.employmentStatus === "ACTIVE",
+    ).length;
 
-    expect(salaries).toHaveLength(5);
+    expect(salaries).toHaveLength(activeCount);
     expect(salaries.every((salary) => salary.isActive)).toBe(true);
     expect(salaries.every((salary) => salary.amount > 0)).toBe(true);
   });

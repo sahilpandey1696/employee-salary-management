@@ -3,6 +3,7 @@ import { fileURLToPath } from "node:url";
 import type { PrismaClient } from "@prisma/client";
 import request from "supertest";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
+import { buildTestEmployee } from "../../test/employee-fixture.js";
 import { createApp } from "../app.js";
 
 let prisma: PrismaClient;
@@ -25,32 +26,40 @@ describe("GET /dashboard/summary", () => {
     await prisma.employee.deleteMany();
 
     const alice = await prisma.employee.create({
-      data: {
+      data: buildTestEmployee({
         employeeNumber: "E100",
-        fullName: "Alice Anderson",
-        country: "US",
-      },
+        country: "United States",
+      }),
     });
     const bob = await prisma.employee.create({
-      data: {
+      data: buildTestEmployee({
         employeeNumber: "E200",
+        firstName: "Bob",
+        lastName: "Brown",
         fullName: "Bob Brown",
-        country: "US",
-      },
+        email: "bob@acme.org",
+        country: "United States",
+      }),
     });
     const carol = await prisma.employee.create({
-      data: {
+      data: buildTestEmployee({
         employeeNumber: "E300",
+        firstName: "Carol",
+        lastName: "Chen",
         fullName: "Carol Chen",
-        country: "UK",
-      },
+        email: "carol@acme.org",
+        country: "United Kingdom",
+      }),
     });
     const david = await prisma.employee.create({
-      data: {
+      data: buildTestEmployee({
         employeeNumber: "E400",
+        firstName: "David",
+        lastName: "Diaz",
         fullName: "David Diaz",
-        country: "DE",
-      },
+        email: "david@acme.org",
+        country: "Germany",
+      }),
     });
 
     await prisma.salary.createMany({
@@ -101,9 +110,9 @@ describe("GET /dashboard/summary", () => {
       averageSalary: 70_000,
     });
     expect(response.body.countryBreakdown).toEqual([
-      { country: "DE", payroll: 0, headcount: 1 },
-      { country: "UK", payroll: 60_000, headcount: 1 },
-      { country: "US", payroll: 150_000, headcount: 2 },
+      { country: "Germany", payroll: 0, headcount: 1 },
+      { country: "United Kingdom", payroll: 60_000, headcount: 1 },
+      { country: "United States", payroll: 150_000, headcount: 2 },
     ]);
   });
 });

@@ -33,12 +33,13 @@ describe("API error handling", () => {
 
   it("returns 400 for invalid JSON request bodies", async () => {
     const app = createApp({ prisma });
+    const { buildTestEmployee } = await import("../../test/employee-fixture.js");
     const employee = await prisma.employee.create({
-      data: {
+      data: buildTestEmployee({
         employeeNumber: `E${Date.now()}`,
         fullName: "Test User",
-        country: "US",
-      },
+        email: `test${Date.now()}@acme.org`,
+      }),
     });
 
     const response = await request(app)

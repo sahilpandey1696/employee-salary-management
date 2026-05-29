@@ -8,17 +8,27 @@ datasource db {
 }
 
 model Employee {
-  id             String   @id @default(cuid())
-  employeeNumber String   @unique
-  fullName       String
-  country        String
-  department     String?
-  salaries       Salary[]
-  createdAt      DateTime @default(now())
+  id               String   @id @default(cuid())
+  employeeNumber   String   @unique
+  firstName        String
+  lastName         String
+  fullName         String
+  email            String
+  phone            String?
+  country          String
+  department       String
+  jobTitle         String
+  employmentStatus String   @default("ACTIVE")
+  joiningDate      DateTime
+  salaries         Salary[]
+  createdAt        DateTime @default(now())
 
   @@index([country])
   @@index([fullName])
   @@index([employeeNumber])
+  @@index([email])
+  @@index([employmentStatus])
+  @@index([department])
 }
 
 model Salary {

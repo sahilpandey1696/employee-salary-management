@@ -25,12 +25,9 @@ describe("employee salary routes", () => {
     await prisma.salary.deleteMany();
     await prisma.employee.deleteMany();
 
+    const { buildTestEmployee } = await import("../../test/employee-fixture.js");
     const employee = await prisma.employee.create({
-      data: {
-        employeeNumber: "E100",
-        fullName: "Alice Anderson",
-        country: "US",
-      },
+      data: buildTestEmployee(),
     });
 
     employeeId = employee.id;

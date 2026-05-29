@@ -3,6 +3,7 @@ import { fileURLToPath } from "node:url";
 import type { PrismaClient } from "@prisma/client";
 import request from "supertest";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
+import { buildTestEmployee } from "../../test/employee-fixture.js";
 import { createApp } from "../app.js";
 
 let prisma: PrismaClient;
@@ -25,32 +26,45 @@ describe("GET /employees", () => {
     await prisma.employee.deleteMany();
     await prisma.employee.createMany({
       data: [
-        {
+        buildTestEmployee({
           employeeNumber: "E100",
           fullName: "Alice Anderson",
-          country: "US",
-          department: "Engineering",
-        },
-        {
+          email: "alice.anderson@acme.org",
+          country: "United States",
+        }),
+        buildTestEmployee({
           employeeNumber: "E200",
+          firstName: "Bob",
+          lastName: "Brown",
           fullName: "Bob Brown",
-          country: "UK",
-        },
-        {
+          email: "bob.brown@acme.org",
+          country: "United Kingdom",
+          department: "Finance",
+        }),
+        buildTestEmployee({
           employeeNumber: "E300",
+          firstName: "Carol",
+          lastName: "Chen",
           fullName: "Carol Chen",
-          country: "US",
-        },
-        {
+          email: "carol.chen@acme.org",
+          country: "United States",
+        }),
+        buildTestEmployee({
           employeeNumber: "E400",
+          firstName: "David",
+          lastName: "Diaz",
           fullName: "David Diaz",
-          country: "DE",
-        },
-        {
+          email: "david.diaz@acme.org",
+          country: "Germany",
+        }),
+        buildTestEmployee({
           employeeNumber: "E500",
+          firstName: "Alice",
+          lastName: "Adams",
           fullName: "Alice Adams",
-          country: "US",
-        },
+          email: "alice.adams@acme.org",
+          country: "United States",
+        }),
       ],
     });
   });
@@ -66,7 +80,7 @@ describe("GET /employees", () => {
 
     expect(response.body).toMatchObject({
       page: 1,
-      pageSize: 25,
+      pageSize: 20,
       total: 5,
       totalPages: 1,
     });
@@ -74,16 +88,16 @@ describe("GET /employees", () => {
     expect(response.body.items[0]).toMatchObject({
       employeeNumber: "E500",
       fullName: "Alice Adams",
-      country: "US",
+      country: "United States",
     });
   });
 
-  it("supports search, country filter, and pagination query params", async () => {
+  it("supports search, employment status filter, and pagination query params", async () => {
     const app = createApp({ prisma });
 
     const response = await request(app)
       .get("/employees")
-      .query({ search: "alice", country: "US", page: 1, pageSize: 1 })
+      .query({ search: "alice", employmentStatus: "ACTIVE", page: 1, pageSize: 1 })
       .expect(200);
 
     expect(response.body).toMatchObject({

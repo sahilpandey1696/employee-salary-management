@@ -14,3 +14,5 @@ apps/api/prisma/test.db
 apps/api/prisma/test.db-journal
 .DS_Store
 npm-debug.log*
+*.tsbuildinfo
+.vite

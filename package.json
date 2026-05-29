@@ -5,9 +5,15 @@
     "apps/*"
   ],
   "scripts": {
+    "dev:api": "npm run dev -w @esm/api",
+    "dev:web": "npm run dev -w @esm/web",
+    "build:web": "npm run build -w @esm/web",
     "test": "npm run test --workspaces --if-present",
     "test:api": "npm run test -w @esm/api",
-    "test:web": "npm run test -w @esm/web"
+    "test:web": "npm run test -w @esm/web",
+    "db:generate": "npm run db:generate -w @esm/api",
+    "db:migrate": "npm run db:migrate -w @esm/api",
+    "db:seed": "npm run db:seed -w @esm/api"
   },
   "engines": {
     "node": ">=20"

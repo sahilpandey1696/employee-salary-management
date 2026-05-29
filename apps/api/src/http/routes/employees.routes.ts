@@ -24,15 +24,7 @@ export function createEmployeesRouter(prisma: PrismaClient): Router {
       const result = await employees.list(params);
       response.json(result);
     } catch (error) {
-      if (error instanceof Error && !(error instanceof BadRequestError)) {
-        const message = error.message;
-        if (message.startsWith("Page ") || message.startsWith("Page size ")) {
-          next(new BadRequestError(message));
-          return;
-        }
-      }
-
-      next(error);
+      next(toHttpError(error));
     }
   });
 
@@ -48,4 +40,19 @@ function parseEmployeeListQuery(
     search: parseOptionalString(query.search),
     country: parseOptionalString(query.country),
   };
+}
+
+function toHttpError(error: unknown): unknown {
+  if (error instanceof BadRequestError) {
+    return error;
+  }
+
+  if (error instanceof Error) {
+    const { message } = error;
+    if (message.startsWith("Page ") || message.startsWith("Page size ")) {
+      return new BadRequestError(message);
+    }
+  }
+
+  return error;
 }

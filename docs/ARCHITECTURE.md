@@ -67,11 +67,13 @@ Server Components where possible for layout; client components for interactive t
 
 Strict TDD for domain first; infrastructure and UI follow failing tests per milestone.
 
-## Deployment (target)
+## Deployment
 
-- **API:** Node process, `DATABASE_URL` file SQLite or mounted volume
-- **Web:** Next.js standalone build; `NEXT_PUBLIC_API_URL` points to API
-- Seed run once: `npm run db:seed` → 10,000 employees
+See [DEPLOYMENT.md](./DEPLOYMENT.md) for production checklist, environment variables, and hosting notes.
+
+- **API:** Node process; `DATABASE_URL` (SQLite dev, Postgres recommended for prod)
+- **Web:** Next.js build; `API_URL` for rewrite proxy to API
+- Seed once: `npm run db:seed` → 10,000 employees
 
 ## Package boundaries
 
